@@ -39,6 +39,11 @@ Vector GetVector(Point p1,Point p2){
   return nv;
 }
 
+//returns z coordinate, because vector has only 2 directions
+double GetVectorProduct(Vector v1, Vector v2){
+  return v1.x*v2.y-v2.x*v1.y;
+}
+
 int main(int argc, char* argv[]){
   Point p1, p2, p3, p4;
   Input(&p1);
@@ -58,13 +63,27 @@ int main(int argc, char* argv[]){
   vB = GetVector(p2,p3);
   vC = GetVector(p3,p1);
 
-  double vectProductZ = vA.x*vB.y-vB.x*vA.y;
-  if (fabs(vectProductZ) < delta)
-    printf("Points on the same line");
+  double vpr = GetVectorProduct(vA,vB);
+  if (fabs(vpr) < delta)
+    printf("Points on the same line\n");
   else
-    printf("Point not on the same line");
+    printf("Point not on the same line\n");
   
   //task 3
+  Input(&p4);
+  Vector vA4, vB4, vC4;
+  vA4 = GetVector(p1,p4);
+  vB4 = GetVector(p2,p4);
+  vC4 = GetVector(p3,p4);
+
+  double vpr1 = GetVectorProduct(vA, vA4);
+  double vpr2 = GetVectorProduct(vB, vB4);
+  double vpr3 = GetVectorProduct(vC, vC4);
+
+  if ((vpr1 < 0 && vpr2 < 0 && vpr3 < 0) || (vpr1 > 0 && vpr2 > 0 && vpr3 > 0))
+    printf("Point inside the triangle\n");
+  else
+    printf("Point outside the triangle\n");
 
   return 0;
 }
