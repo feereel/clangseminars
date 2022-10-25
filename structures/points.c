@@ -49,8 +49,8 @@ int main(int argc, char* argv[]){
   Input(&p1);
   Input(&p2);
 
-  printf("x: %f, y: %f\n", p1.x, p1.y);
-  printf("x: %f, y: %f\n", p2.x, p2.y);
+  //printf("x: %f, y: %f\n", p1.x, p1.y);
+  //printf("x: %f, y: %f\n", p2.x, p2.y);
 
   //task 1
   double len = sqrt(pow(p1.x-p2.x,2) + pow(p1.y-p2.y,2));
