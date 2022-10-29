@@ -28,8 +28,6 @@ void Input(Point* p){
   }
   p->x = a[0];
   p->y = a[1];
-
-  free(ptr);
 }
 
 Vector GetVector(Point p1,Point p2){
