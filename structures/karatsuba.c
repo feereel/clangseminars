@@ -14,10 +14,6 @@ typedef union {
 }bigint;
 
 bigint KaratsubaMult(bigint a, size_t n, int reci){
-  //reci++;
-  //for(size_t i = 0; i<reci;i++)
-  //  printf("\t");
-  //printf("n: %d, l: %d r:%d\n", (int)n, a.left, a.right);
   if (n <= 1 || a.left < 10 || a.right < 10){
     a.v = a.right * a.left; 
     return a;
@@ -33,12 +29,7 @@ bigint KaratsubaMult(bigint a, size_t n, int reci){
   
   ui rl = a.right / pow(BASE,half);
   ui rr = a.right - rl * pow(BASE,half);
-
-
-  //for(size_t i = 0; i<reci;i++)
-  //  printf("\t");
-  //printf("\\ll: %d lr: %d rl: %d rr:%d\n",ll,lr,rl,rr);
-
+  
   bigint k1;
   k1.left = ll;
   k1.right = rl;
