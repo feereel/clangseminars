@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define QUICK_SORT(T) void Sort_##T(T array[], int size) { \
-  qsort(array, size, sizeof(T), cmp); \
-};
+#define CMP_BY(T) int cmp_##T(const void* a, const void* b) {return *(T*)a - *(T*)b;}
 
-int cmp(const void* a, const void* b) {
-  return *(int*)a - *(int*)b;
-}
+CMP_BY(int)
+CMP_BY(float)
+
+#define QUICK_SORT(T) void Sort_##T(T array[], T size) { \
+  qsort(array, size, sizeof(T), cmp_##T); \
+};
 
 QUICK_SORT(int)
 QUICK_SORT(float)
