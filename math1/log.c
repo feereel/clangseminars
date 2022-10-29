@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int isPowerOf(int base,int val) {
+int isPower(int val) {
   if (val<0)
     return -2;
     
@@ -8,8 +8,8 @@ int isPowerOf(int base,int val) {
   int k = 0;
 
   while (t<val){
-    t *= base;
-    ++k;
+    t <<= 1;
+    k++;
   }
   
   if (val == t)
@@ -23,5 +23,5 @@ int main(int argc, char* argv[]){
   int inp;
   sscanf(argv[1], "%d", &inp);
 
-  printf("%d\n", isPowerOf(2,inp));
+  printf("%d\n", isPower(inp));
 }
