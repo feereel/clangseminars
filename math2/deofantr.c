@@ -60,11 +60,6 @@ int main(int argc, char* argv[]){
   answ.x *=q;
   answ.y *=q;
 
-  //printf("%d * %d +  %d * %d = %d == %d  |x| + |y| = %d   %d\n",
-  //       r0, answ.x, r1, answ.y, c,
-  //        r0 * answ.x + r1*answ.y,
-  //        abs(answ.x) + abs(answ.y), answ.gcd);
-
   //find minimux |x| + |y|
   int current = abs(answ.x) + abs(answ.y);
 
