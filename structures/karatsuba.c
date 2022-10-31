@@ -14,7 +14,7 @@ typedef union {
 }bigint;
 
 bigint KaratsubaMult(bigint a, size_t n, int reci){
-  if (n <= 1 || a.left < 10 || a.right < 10){
+  if (a.left < 10 || a.right < 10){
     a.v = a.right * a.left; 
     return a;
   }
