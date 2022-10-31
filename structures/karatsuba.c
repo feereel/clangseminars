@@ -46,7 +46,6 @@ bigint KaratsubaMult(bigint a, size_t n, int reci){
   k2 = KaratsubaMult(k2, half, reci);
 
   a.v = k1.v * pow(10, n) + (k2.v - k1.v - k3.v)*pow(10,half) + k3.v;
-  //printf("%lu\n", a.v);
   return a;
 }
 
