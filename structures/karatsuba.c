@@ -13,7 +13,7 @@ typedef union {
   unsigned long v;
 }bigint;
 
-bigint KaratsubaMult(bigint a, size_t n, int reci){
+bigint KaratsubaMult(bigint a, size_t n){
   if (a.left < 10 || a.right < 10){
     a.v = a.right * a.left; 
     return a;
@@ -33,17 +33,17 @@ bigint KaratsubaMult(bigint a, size_t n, int reci){
   bigint k1;
   k1.left = ll;
   k1.right = rl;
-  k1 = KaratsubaMult(k1, n - half, reci);
+  k1 = KaratsubaMult(k1, n - half);
   
   bigint k3;
   k3.left = lr;
   k3.right = rr;
-  k3 = KaratsubaMult(k3, half, reci);
+  k3 = KaratsubaMult(k3, half);
 
   bigint k2;
   k2.left = ll + lr;
   k2.right = rl + rr;
-  k2 = KaratsubaMult(k2, half, reci);
+  k2 = KaratsubaMult(k2, half);
 
   a.v = k1.v * pow(10, n) + (k2.v - k1.v - k3.v)*pow(10,half) + k3.v;
   return a;
@@ -64,7 +64,7 @@ int main (int argc, char* argv[]){
     b /= 10;
   }
 
-  bn = KaratsubaMult(bn,i, -1);
+  bn = KaratsubaMult(bn,i);
   printf("%lu\n", bn.v);
   
 }
