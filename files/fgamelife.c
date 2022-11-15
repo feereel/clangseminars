@@ -86,7 +86,17 @@ void PrintMtr(int** mtr, int mtrSize) {
   printf("\n");
 }
 
+
+
 int main(int argc, char* argv[]){
+
+  FILE 8fp;
+  fp = fopen("./outmtr.txt", "w");
+
+  if (fp == NULL){
+    printf("Не удалось открыть файл");
+    return 1;
+  }
 
   int mtrSize = atoi(argv[1]), lifesCount = atoi(argv[2]), cicleCount = atoi(argv[3]);
 
@@ -101,7 +111,7 @@ int main(int argc, char* argv[]){
   }
 
   RandFillMtr(mtr, mtrSize, lifesCount);
-  //PrintMtr(mtr, mtrSize);
+  PrintMtr(mtr, mtrSize);
 
   for(int i = 0; i < cicleCount; i++){
     //PrintNearbyCount(mtr, mtrSize);
