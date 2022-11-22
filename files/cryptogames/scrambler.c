@@ -1,10 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
-int GetBinLen(int number);
-
-
 int main(){
   char key[256];
   char filename[80];
