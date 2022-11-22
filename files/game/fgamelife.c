@@ -7,17 +7,60 @@
 #define DIEDNOW -1
 #define ALIVENOW 2
 
-void RandFillMtr(int** mtr, int mtrSize, int lifesCount) {
-  srand(time(NULL));
+#define CICLECOUNT 5
 
-  for(size_t i = 0; i < lifesCount; i++){
-    int a,b;
-    do {
-      a = rand() % mtrSize;
-      b = rand() % mtrSize;
-    } while (mtr[a][b] != 0);
+void WriteMtr(int** mtr, int mtrSize, FILE* fout) {
+  for(size_t i = 0; i < mtrSize; i++){
+    char line[mtrSize*2 + 1];
+    for(size_t j = 0; j < mtrSize*2; j+=2){
+      if(mtr[i][j] == 0){
+        line[j] = '_';
+        line[j+1] = ' ';
+      }
+      else{
+        line[j] = '*';
+        line[j+1] = ' ';
+      } 
+    }
+    line[mtrSize*2] = '\n';
+    fputs(line, fout);
+  }
+  
+  fputc('\n', fout);
+}
 
-    mtr[a][b] = ALIVE;
+int GetSize(FILE* fptr){
+  char symb;
+  int n = 0;
+  while((symb = fgetc(fptr)) != '\n'){
+    if (symb == '*' || symb == '_'){
+      n+=1;
+    }
+  }
+  fseek(fptr, -(n*2), SEEK_CUR);
+  return n;
+}
+
+
+void Fill(int** mtr, size_t mtrSize, FILE* fptr){
+
+  printf("\n");
+  int i = 0;
+  int k = 0;
+ 
+  char symb;
+  while ((symb = fgetc(fptr)) != EOF && k < mtrSize){
+    if (symb == '*') {
+      mtr[k][i] = ALIVE;
+      //printf("d: %d i: %i\n", k, i);
+      i++;
+    }
+    if (symb == '_')
+      i++;
+    if (i >= mtrSize) {
+      i = 0;
+      k++;
+    }
   }
 }
 
@@ -62,45 +105,19 @@ void Cycle(int** mtr, int mtrSize){
   EndOfCycle(mtr, mtrSize);
 }
 
-void PrintNearbyCount(int** mtr, int mtrSize){
-  for(size_t i = 0; i < mtrSize; i++){
-    for(size_t j = 0; j < mtrSize; j++){
-      printf("%d ", CheckNearbyAlive(mtr, mtrSize, i, j));
-    }
-    printf("\n");
-  }
-  printf("\n");
-
-}
-
-void PrintMtr(int** mtr, int mtrSize) {
-  for(size_t i = 0; i < mtrSize; i++){
-    for(size_t j = 0; j < mtrSize; j++){
-      if(mtr[i][j] == 0)
-        printf("_ ");
-      else
-        printf("* ");
-    }
-    printf("\n");
-  }
-  printf("\n");
-}
-
-
-
 int main(int argc, char* argv[]){
 
-  FILE 8fp;
-  fp = fopen("./outmtr.txt", "w");
+  FILE* finp;
+  finp = fopen("./input.txt", "r");
 
-  if (fp == NULL){
-    printf("Не удалось открыть файл");
+  if (finp == NULL){
+    printf("Не удалось открыть файл для чтения");
     return 1;
   }
 
-  int mtrSize = atoi(argv[1]), lifesCount = atoi(argv[2]), cicleCount = atoi(argv[3]);
-
   int** mtr;
+  size_t mtrSize = GetSize(finp);
+
   mtr = (int**)malloc(sizeof(int*) * mtrSize);
 
   for(int i = 0; i < mtrSize; i++){
@@ -109,14 +126,18 @@ int main(int argc, char* argv[]){
       mtr[i][j] = DEAD;
     }
   }
+ 
+  //RandFillMtr(mtr, mtrSize, lifesCount);
+  Fill(mtr, mtrSize, finp);
 
-  RandFillMtr(mtr, mtrSize, lifesCount);
-  PrintMtr(mtr, mtrSize);
+  FILE* fout;
+  fout = fopen("./output.txt", "w");
+  WriteMtr(mtr, mtrSize, fout);
 
-  for(int i = 0; i < cicleCount; i++){
+  for(int i = 0; i < CICLECOUNT; i++){
     //PrintNearbyCount(mtr, mtrSize);
     Cycle(mtr, mtrSize);
-    PrintMtr(mtr, mtrSize);
+    WriteMtr(mtr, mtrSize, fout);
   }
 
   for(int i = 0; i < mtrSize;i++)
