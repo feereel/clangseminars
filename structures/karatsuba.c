@@ -2,69 +2,118 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define ui unsigned int
+#define ll unsigned long
 #define BASE 10
 
 typedef union {
   struct {
-    unsigned int right;
-    unsigned int left;
+    unsigned long right;
+    unsigned long left;
   };
-  unsigned long v;
-}bigint;
+  struct{
+    unsigned long rright;
+    unsigned long rmid;
+    unsigned long rleft;
+  };
+} bigint;
 
-bigint KaratsubaMult(bigint a, size_t n){
-  if (a.left < 10 || a.right < 10){
-    a.v = a.right * a.left; 
-    return a;
+int GetLen(int number){
+  int c = 0;
+  while (number > 0){
+    number/=10;
+    c++;
   }
+  return c;
+}
 
-  if (n&1)
-    n+=1;
+int* GetNumbers(int numbers, int len){
+  int* array = malloc(sizeof(int) * len);
+  for(int i = 0; i < len; i++){
+    array[len - 1 - i] = numbers % 10;
+    numbers /= 10;
+  }
+  return array;
+}
 
-  size_t half = n - n/2;
+bigint KaratsubaMult(bigint inp, int n){
+  int half = n/2;
+  ll pll = inp.left / pow(10, half);
+  ll plr = inp.left - pll * pow(10, half);
+  ll prl = inp.right / pow(10, half);
+  ll prr = inp.right - prl * pow(10,half);
 
-  ui ll = a.left / pow(BASE,half);
-  ui lr = a.left - ll * pow(BASE,half);
-  
-  ui rl = a.right / pow(BASE,half);
-  ui rr = a.right - rl * pow(BASE,half);
-  
-  bigint k1;
-  k1.left = ll;
-  k1.right = rl;
-  k1 = KaratsubaMult(k1, n - half);
-  
-  bigint k3;
-  k3.left = lr;
-  k3.right = rr;
-  k3 = KaratsubaMult(k3, half);
+  printf("pll: %lu plr: %lu prl: %lu prr: %lu\n", pll, plr, prl, prr);
 
-  bigint k2;
-  k2.left = ll + lr;
-  k2.right = rl + rr;
-  k2 = KaratsubaMult(k2, half);
+  ll rl = pll * prl;
+  ll rr = plr * prr;
+  ll rm = (pll + plr) * (prl + prr) - rl - rr;
 
-  a.v = k1.v * pow(10, n) + (k2.v - k1.v - k3.v)*pow(10,half) + k3.v;
-  return a;
+  inp.rleft = rl;
+  inp.rright = rr;
+  inp.rmid = rm;
+
+  return inp;
+}
+
+void PrintBigint(bigint inp, size_t len){
+  printf("\n");
+
+  size_t rlen = GetLen(inp.rright);
+  int* rarr = GetNumbers(inp.rright, rlen);
+  for(int i = 0; i < 2 * len-rlen; i++){
+    printf("_ ");
+  }
+  for(int i = 0; i < rlen; i++){
+    printf("%d ", rarr[i]);
+  }
+  printf("\n");
+  free(rarr);
+
+  size_t mlen = GetLen(inp.rmid);
+  int* marr = GetNumbers(inp.rmid, mlen);
+  for(int i = 0; i < 2 * len - mlen - len / 2; i++){
+    printf("_ ");
+  }
+  for(int i = 0; i < mlen; i++){
+    printf("%d ", marr[i]);
+  }
+  for(int i = 0; i < len / 2; i++){
+    printf("_ ");
+  }
+  printf("\n");
+  free(marr);
+
+  size_t llen = GetLen(inp.rleft);
+  int k = 0;
+  if (len&1)
+    k = -1;
+
+  int* larr = GetNumbers(inp.rleft, llen);
+  for(int i = 0; i < len - llen - k; i++){
+    printf("_ ");
+  }
+  for(int i = 0; i < llen; i++){
+    printf("%d ", larr[i]);
+  }
+  for(int i = 0; i < len + k; i++){
+    printf("_ ");
+  }
+  printf("\n");
+  free(larr);
 }
 
 int main (int argc, char* argv[]){
-
   bigint bn;
-  bn.right = atoi(argv[1]);
-  bn.left = atoi(argv[2]);
-
-  int i = 0;
-  ui a = bn.right;
-  ui b = bn.left;
-  while (a != 0 && b != 0){
-    i++;
-    a /= 10;
-    b /= 10;
-  }
-
-  bn = KaratsubaMult(bn,i);
-  printf("%lu\n", bn.v);
+  ll a, b;
+  scanf("%lu %lu", &a, &b);
+  bn.right = b;
+  bn.left = a;
   
+  size_t len = GetLen(a);
+
+  printf("%lu %lu \n", bn.right, bn.left);
+  
+  bn = KaratsubaMult(bn, len);
+  printf("%lu-%lu-%lu\n", bn.rleft, bn.rmid, bn.rright);
+  PrintBigint(bn, len);
 }
