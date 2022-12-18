@@ -2,6 +2,8 @@
 .ccls
 /.ccls-cache
 
+#DS
+*.DS_Store
 
 # Prerequisites
 *.d
