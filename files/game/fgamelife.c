@@ -7,19 +7,18 @@
 #define DIEDNOW -1
 #define ALIVENOW 2
 
-#define CICLECOUNT 5
 
-void WriteMtr(int** mtr, int mtrSize, FILE* fout) {
+void WriteMtr(int** mtr, size_t mtrSize, FILE* fout) {
   for(size_t i = 0; i < mtrSize; i++){
     char line[mtrSize*2 + 1];
-    for(size_t j = 0; j < mtrSize*2; j+=2){
+    for(size_t j = 0; j < mtrSize; j++){
       if(mtr[i][j] == 0){
-        line[j] = '_';
-        line[j+1] = ' ';
+        line[2*j] = '_';
+        line[2*j+1] = ' ';
       }
       else{
-        line[j] = '*';
-        line[j+1] = ' ';
+        line[2*j] = '*';
+        line[2*j+1] = ' ';
       } 
     }
     line[mtrSize*2] = '\n';
@@ -37,7 +36,7 @@ int GetSize(FILE* fptr){
       n+=1;
     }
   }
-  fseek(fptr, -(n*2), SEEK_CUR);
+  fseek(fptr, 0, SEEK_SET);
   return n;
 }
 
@@ -108,7 +107,12 @@ void Cycle(int** mtr, int mtrSize){
 int main(int argc, char* argv[]){
 
   FILE* finp;
-  finp = fopen("./input.txt", "r");
+  finp = fopen(argv[1], "r");
+  FILE* fout;
+  fout = fopen(argv[2], "w");
+
+  int ciclecount = atoi(argv[3]);
+
 
   if (finp == NULL){
     printf("Не удалось открыть файл для чтения");
@@ -117,7 +121,6 @@ int main(int argc, char* argv[]){
 
   int** mtr;
   size_t mtrSize = GetSize(finp);
-
   mtr = (int**)malloc(sizeof(int*) * mtrSize);
 
   for(int i = 0; i < mtrSize; i++){
@@ -126,15 +129,12 @@ int main(int argc, char* argv[]){
       mtr[i][j] = DEAD;
     }
   }
- 
-  //RandFillMtr(mtr, mtrSize, lifesCount);
+  
   Fill(mtr, mtrSize, finp);
-
-  FILE* fout;
-  fout = fopen("./output.txt", "w");
   WriteMtr(mtr, mtrSize, fout);
 
-  for(int i = 0; i < CICLECOUNT; i++){
+
+  for(int i = 0; i < ciclecount; i++){
     //PrintNearbyCount(mtr, mtrSize);
     Cycle(mtr, mtrSize);
     WriteMtr(mtr, mtrSize, fout);
