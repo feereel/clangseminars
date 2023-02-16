@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include <string.h>
+#include <math.h>
 
 #define MAXVALUE 10
 #define MAXMTRSIZE 10
 #define MAXMATRIKSCOUNT 128
+#define EPSELON 10e-5
 
 typedef struct {
   size_t m;
@@ -50,6 +52,24 @@ double* ReadMtrRow(size_t lenght){
   return row;
 }
 
+Matrix CopyMtr(Matrix from){
+  Matrix mtr = InitMtr(from.m, from.n);
+  for(size_t i = 0; i < from.m; i++){
+    for(size_t j = 0; j < from.n; j++){
+      mtr.self[i][j] = from.self[i][j];
+    }
+  }
+  return mtr;
+}
+
+Matrix IdentityMtr(size_t n){
+  Matrix mtr = InitMtr(n,n); 
+  for(size_t i = 0; i < n; i++){
+    mtr.self[i][i] = 1;
+  }
+  return mtr;
+}
+
 void RandFillMtr(Matrix mtr, double borderA, double borderB){
   for(size_t i = 0; i < mtr.m; i++){
     for(size_t j = 0; j < mtr.n; j++){
@@ -78,7 +98,7 @@ void FillFFMtr(Matrix mtr, FILE* file){
 void PrintMtr(Matrix mtr){
  for(size_t i = 0; i < mtr.m; i++){
     for(size_t j = 0; j < mtr.n; j++){
-      printf("%lf ", mtr.self[i][j]);
+      printf("%.1lf\t", mtr.self[i][j]);
     }
     printf("\n");
   }
@@ -95,13 +115,37 @@ Matrix SumMtr(Matrix mtr1, Matrix mtr2){
 
   for(size_t i = 0; i < mtr1.m; i++){
     for(size_t j = 0; j < mtr1.n; j++){
-      mtr.self[i][j] = mtr1.self[i][j] + mtr1.self[i][j];
+      mtr.self[i][j] = mtr1.self[i][j] + mtr2.self[i][j];
     }
   }
   return mtr;
 }
 
-Matrix MultMtr(Matrix mtr1, Matrix mtr2){
+Matrix DifMtr(Matrix mtr1, Matrix mtr2){
+  if(mtr1.m != mtr2.m || mtr1.n != mtr2.n){
+    printf("Разные размеры матриц для разности");
+    exit(0);
+  }
+
+  Matrix mtr = InitMtr(mtr1.m,mtr1.n);
+
+  for(size_t i = 0; i < mtr1.m; i++){
+    for(size_t j = 0; j < mtr1.n; j++){
+      mtr.self[i][j] = mtr1.self[i][j] - mtr2.self[i][j];
+    }
+  }
+  return mtr;
+}
+
+void ConstMulMtr(Matrix mtr, double value){ 
+  for(size_t i = 0; i < mtr.m; i++){
+    for(size_t j = 0; j < mtr.n; j++){
+      mtr.self[i][j] *= value;
+    }
+  }
+}
+
+Matrix MulMtr(Matrix mtr1, Matrix mtr2){
   if(mtr1.n != mtr2.m){
     printf("Матрицы не соответсвуют размеру m*n и n*k\n");
     exit(0);
@@ -113,7 +157,7 @@ Matrix MultMtr(Matrix mtr1, Matrix mtr2){
     for(size_t j = 0; j < mtr2.n; j++){
       mtr.self[i][j] = 0;
       for(size_t k = 0; k < mtr1.n; k++)
-        mtr.self[i][j] += mtr1.self[i][k] + mtr1.self[k][j];
+        mtr.self[i][j] += mtr1.self[i][k] * mtr2.self[k][j];
     }
   }
   return mtr;
@@ -121,7 +165,7 @@ Matrix MultMtr(Matrix mtr1, Matrix mtr2){
 
 Matrix TranspMtr(Matrix mtr){
 
-  Matrix nmtr = InitMtr(mtr.m, mtr.n);
+  Matrix nmtr = InitMtr(mtr.n, mtr.m);
 
   for(size_t i = 0; i < mtr.m; i++){
     for(size_t j = 0; j < mtr.n; j++){
@@ -132,8 +176,76 @@ Matrix TranspMtr(Matrix mtr){
   return nmtr;
 }
 
-//Matrix ReversedMtr(){}
+Matrix MinorMtr(Matrix mtr, size_t pos_i, size_t pos_j){
+  if (pos_i >= mtr.m || pos_j >= mtr.n){
+    printf("Указаны неверные позиции (i,j) для вычисления минора\n");
+    exit(0);
+  }
 
+  Matrix minor = InitMtr(mtr.m - 1, mtr.n - 1);
+  for(size_t i = 0; i < mtr.m; i++){
+    for(size_t j = 0; j < mtr.n; j++){
+      if (i < pos_i && j < pos_j){
+        minor.self[i][j] = mtr.self[i][j];
+      } else if (i < pos_i && j > pos_j){
+        minor.self[i][j-1] = mtr.self[i][j];
+      } else if (i > pos_i && j < pos_j){
+        minor.self[i-1][j] = mtr.self[i][j];
+      } else if ( i > pos_i && j > pos_j){
+        minor.self[i-1][j-1] = mtr.self[i][j];
+      }
+    }
+  }
+  return minor;
+}
+
+double DetMtr(Matrix mtr){ 
+  if(mtr.n != mtr.m){
+    printf("Матрица не соответсвует размеру m*m\n");
+    exit(0);
+  }
+
+  if (mtr.n == 1) {
+    return mtr.self[0][0];
+  } else if (mtr.n == 2) {
+    return (mtr.self[0][0] * mtr.self[1][1]) - (mtr.self[0][1] * mtr.self[1][0]);
+  }
+
+  double res = 0;
+  int sign = 1;
+  for(size_t i = 0; i < mtr.n; i++){
+    Matrix minor = MinorMtr(mtr, 0, i);
+    res += sign * mtr.self[0][i] * DetMtr(minor);
+    FreeMtr(minor);
+
+    sign *= -1;
+  }
+  return res;
+}
+
+Matrix ReversedMtr(Matrix mtr){
+  if(mtr.n != mtr.m){
+    printf("Матрица не соответсвует размеру m*m\n");
+    exit(0);
+  }
+  double detmtr = DetMtr(mtr);
+  if (fabs(detmtr) < EPSELON){
+    printf("Определить равен нулю!\n");
+    exit(0);
+  }
+
+  Matrix revmtr = InitMtr(mtr.n, mtr.m); 
+  for(size_t i = 0; i < mtr.m; i++){
+    for(size_t j = 0; j < mtr.n; j++){
+      Matrix minor = MinorMtr(mtr, i, j);
+      revmtr.self[j][i] = pow(-1, i + j) * DetMtr(minor); 
+      FreeMtr(minor);
+    }
+  }
+
+  ConstMulMtr(revmtr, 1/detmtr);
+  return revmtr;
+}
 
 Matrix InputMtr() {
   printf("Выбери способ  ввода:\n"
@@ -230,13 +342,13 @@ void ShowMtrs(nMatrix* mtrs, size_t count){
     printf("Чтобы вывести матрицу введите название или q для выхода:\n-> ");
     char name[64];
     scanf("%s", name);
-    if(strcmp(name,"q") == 0){
+
+    if(strcmp(name,"q") == 0)
       break;
-    } else {
-      int ind = FindMtr(mtrs, count, name);
-      if (ind >= 0){
-        PrintMtr(mtrs[ind].mtr);
-      }
+      
+    int ind = FindMtr(mtrs, count, name);
+    if (ind >= 0){
+      PrintMtr(mtrs[ind].mtr);
     }
   }
 }
@@ -255,36 +367,86 @@ size_t DeleteMtr(nMatrix* mtrs, size_t count){
     printf("Чтобы удалить матрицу введине название или q для выхода:\n-> ");
     char name[64];
     scanf("%s", name);
-    if(strcmp(name,"q") == 0){
+
+    if(strcmp(name,"q") == 0)
       break;
-    } else {
-      int ind = FindMtr(mtrs, count, name);
-      if (ind >= 0){
-        DeleteMtrfp(mtrs, count, ind);
-        count -= 1;
-      }
+    
+    int ind = FindMtr(mtrs, count, name);
+    if (ind >= 0){
+      DeleteMtrfp(mtrs, count, ind);
+      count -= 1;
     }
   }
   return count;
 }
 
-void ArifmeticMtr(nMatrix* mtrs, size_t count){
-  printf("Операции: \n"
-         "Сложение: A + B"
-         "Вычитание: A - B"
-         "Умножение: A * B"
-         "Транспонирование: ^A"
-         "Обратная матрица: !A");
+int ArifmeticMtr(nMatrix* mtrs, size_t count){
+  printf("Сложение: A + B\n"
+         "Вычитание: A - B\n"
+         "Умножение: A * B\n"
+         "Транспонирование: ! A\n"
+         "Определитель: $ A\n"
+         "Обратная матрица: ^ A\n\n");
 
   enum Operation {Add = 0, Sub = 1, Mul = 2, Trn = 3, Rev = 4};
   while(1){
     ShownMtrs(mtrs,count);
-    printf("Введите арифметическое выржание:\n-> ");
-    char expr[128];
-    scanf("%s", expr
-    GetOperation(nMatrix* mtrs, size_t count, char* line);
-    
+    printf("Введите арифметическое выржание или q для выхода:\n-> ");
+    char p1[64];
+    char p2[64];
+    char p3[64];
+    scanf("%s", p1);
+
+    if(strcmp(p1, "q") == 0)
+      break;
+
+    Matrix mtr;
+    if (p1[0] == '^') { 
+      scanf("%s", p2);
+      int ind = FindMtr(mtrs, count, p2);
+      if (ind >= 0){
+        mtr = ReversedMtr(mtrs[ind].mtr);
+      } else {
+        continue;
+      }
+    } else if (p1[0] == '!') {
+      scanf("%s", p2);
+      int ind = FindMtr(mtrs, count, p2);
+      if (ind >= 0){
+        mtr = TranspMtr(mtrs[ind].mtr);
+      } else {
+        continue;
+      }
+    } else if (p1[0] == '$'){
+      scanf("%s", p2);
+      int ind = FindMtr(mtrs, count, p2);
+      if (ind >= 0){
+        printf("Опредитель матрицы '%s' = %lf\n", mtrs[ind].name ,DetMtr(mtrs[ind].mtr));
+      }
+      continue;
+    } else {
+      scanf("%s", p2);
+      scanf("%s", p3);
+      int indA = FindMtr(mtrs, count, p1);
+      int indB = FindMtr(mtrs, count, p3);
+
+      if (indA < 0 || indB < 0)
+        continue;
+
+      if (strcmp(p2, "+") == 0) {
+        mtr = SumMtr(mtrs[indA].mtr, mtrs[indB].mtr);
+      } else if (strcmp(p2, "-") == 0) {
+        mtr = DifMtr(mtrs[indA].mtr, mtrs[indB].mtr);
+      } else if (strcmp(p2, "*") == 0) {
+        mtr = MulMtr(mtrs[indA].mtr, mtrs[indB].mtr);
+      }
+      else {
+        continue;
+      }
+    }
+    count = AddMtr(mtrs, count, mtr);
   }
+  return count;
 }
 
 int main(int argc, char* argv[]){
@@ -311,13 +473,13 @@ int main(int argc, char* argv[]){
         break;
       case 2:
         mtr = InputMtr();
-        AddMtr(mtrs, count, mtr);
+        count = AddMtr(mtrs, count, mtr);
         break;
       case 3:
         count = DeleteMtr(mtrs, count);
         break;
       case 4:
-        ArifmeticMtr(mtrs, count);
+        count = ArifmeticMtr(mtrs, count);
         break;
       default:
         flag = 0;
