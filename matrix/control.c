@@ -49,14 +49,12 @@ Matrix InputMtr() {
       break;
     case 1:
       FillFFMtr(mtr, file);
+      fclose(file);
       break;
     default:
       FillMtr(mtr);
       break;
   }
-
-  if (file == NULL)
-    fclose(file);
 
   return mtr;
 }

@@ -1,4 +1,5 @@
 #include "matrix.h"
+#include <time.h> 
 
 Matrix InitMtr(size_t m, size_t n){
   Matrix mtr;
@@ -134,6 +135,9 @@ Matrix MulMtr(Matrix mtr1, Matrix mtr2){
 
   Matrix mtr = InitMtr(mtr1.m,mtr2.n);
 
+
+  double time_spent = 0.0;
+  clock_t begin = clock();
   for(size_t i = 0; i < mtr1.m; i++){
     for(size_t j = 0; j < mtr2.n; j++){
       mtr.self[i][j] = 0;
@@ -141,6 +145,10 @@ Matrix MulMtr(Matrix mtr1, Matrix mtr2){
         mtr.self[i][j] += mtr1.self[i][k] * mtr2.self[k][j];
     }
   }
+  clock_t end = clock();
+
+  time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+  printf("The elapsed time is %f seconds\n", time_spent);
   return mtr;
 }
 
